@@ -7,6 +7,7 @@ import { list } from 'tar';
 import zlib from 'zlib';
 
 if (process.env.SKIP_BUILD_GEO) {
+  fs.rmSync(path.resolve(process.cwd(), 'geo'), { recursive: true, force: true });
   console.log('SKIP_BUILD_GEO is set. Skipping geo setup.');
   process.exit(0);
 }

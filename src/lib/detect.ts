@@ -109,13 +109,18 @@ export async function getLocation(ip: string = '', headers: Headers, skipHeaders
     }
   }
 
-  // Database lookup
+  // Database lookup is optional because some serverless deployments omit the
+  // GeoLite database to stay within their function package size limits.
   if (!globalThis[MAXMIND]) {
-    const dir = path.join(process.cwd(), 'geo');
+    const geoLiteDatabaseDirectory = path.join(process.cwd(), 'geo');
+    const geoLiteDatabasePath =
+      process.env.GEOLITE_DB_PATH || path.resolve(geoLiteDatabaseDirectory, 'GeoLite2-City.mmdb');
 
-    globalThis[MAXMIND] = await maxmind.open(
-      process.env.GEOLITE_DB_PATH || path.resolve(dir, 'GeoLite2-City.mmdb'),
-    );
+    try {
+      globalThis[MAXMIND] = await maxmind.open(geoLiteDatabasePath);
+    } catch {
+      return undefined;
+    }
   }
 
   const result = globalThis[MAXMIND]?.get(cleanIp);
